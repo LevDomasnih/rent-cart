@@ -1,0 +1,17 @@
+version: '3.1'
+
+services:
+  pg_db:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_HOST=127.0.0.1
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./postgresql:/var/lib/postgresql/data
+    ports:
+      - ${POSTGRES_PORT:-5432}:5432
