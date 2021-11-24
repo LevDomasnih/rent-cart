@@ -11,16 +11,18 @@ const sale = [
     sale: 5
   },
   {
-    from: 10,
-    to: 17,
-    sale: 10
-  },
-  {
     from: 18,
     to: 29,
     sale: 15
   },
+  {
+    from: 10,
+    to: 17,
+    sale: 10
+  },
 ]
+
+const basePrice = 1000
 
 @Injectable()
 export class RentService {
@@ -41,10 +43,33 @@ export class RentService {
   }
 
   private async sessionPrice({ start_session, end_session }: Omit<CheckRentRequestDto, 'id'>) {
-    const start = moment(start_session, "YYYY-MM-DD");
-    const end = moment(end_session, "YYYY-MM-DD");
+    const start = moment(start_session, "YYYY-MM-DD")
+    const end = moment(end_session, "YYYY-MM-DD")
 
-    const days = moment.duration(end.diff(start)).asDays();
+    const days = moment.duration(end.diff(start)).asDays()
+
+    const sortedSales = sale.sort(( a, b ) => b.sale - a.sale);
+
+    let price = 0
+
+    for (let i = days, y = 0; i > 0; i--) {
+      if (sortedSales.length > y) {
+        if (i >= sortedSales[y].from) {
+          price += basePrice * ((100 - sortedSales[y].sale) / 100)
+        } else {
+          if (sortedSales.length > y + 1) {
+            y += 1
+            price += basePrice * ((100 - sortedSales[y].sale) / 100)
+          } else {
+            price += basePrice
+          }
+        }
+      } else {
+        price += basePrice
+      }
+    }
+
+    return price
   }
 
   async checkCarRent({ start_session, id, end_session }: CheckRentRequestDto) {

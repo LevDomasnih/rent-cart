@@ -9,6 +9,6 @@ export class RentController {
 
   @Post('check')
   async checkRent(@Body() dto: CheckRentRequestDto) {
-    // return this.rentService.carIsNotRented(dto)
+    return this.rentService.checkCarRent(dto)
   }
 }
