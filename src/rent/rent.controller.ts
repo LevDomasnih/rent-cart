@@ -1,24 +1,43 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { RentService } from './rent.service';
-import { CheckRentRequestDto } from './dto/check-rent-request-dto';
+import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { RentService } from "./rent.service";
+import { RentRequestDto } from "./dto/rent-request.dto";
+import { DateValidationPipe } from "../pipes/date-validation.pipe";
+import { ApiCreatedResponse, ApiTags } from "@nestjs/swagger";
+import { ReportResponseDto } from "./dto/report-response.dto";
+import { CheckRentResponseDto } from "./dto/check-rent-response.dto";
+import { RentResponseDto } from "./dto/rent-response.dto";
 
-@Controller('rent')
+@ApiTags("rent")
+@Controller("rent")
 export class RentController {
 
-  constructor(private readonly rentService: RentService) { }
-
-  @Post('check')
-  async checkRent(@Body() dto: CheckRentRequestDto) {
-    return this.rentService.checkCarRent(dto)
+  constructor(private readonly rentService: RentService) {
   }
 
-  @Post('rent')
-  async rent(@Body() dto: CheckRentRequestDto) {
-    return this.rentService.rentCar(dto)
+  @Post("check")
+  @ApiCreatedResponse({
+    description: "Проверка аренды",
+    type: CheckRentResponseDto
+  })
+  async checkRent(@Body() dto: RentRequestDto): Promise<CheckRentResponseDto> {
+    return this.rentService.checkCarRent(dto);
   }
 
-  @Get(':date')
-  async getReport(@Param('date') date: string) {
-    return this.rentService.rentReport(date)
+  @Post()
+  @ApiCreatedResponse({
+    description: "Арендовать машину",
+    type: RentResponseDto
+  })
+  async rent(@Body() dto: RentRequestDto): Promise<RentResponseDto> {
+    return this.rentService.rentCar(dto);
+  }
+
+  @Get(":date")
+  @ApiCreatedResponse({
+    description: "Отчет о средней загрузке машин в месяц",
+    type: [ReportResponseDto]
+  })
+  async getReport(@Param("date", DateValidationPipe) date: string): Promise<ReportResponseDto[] | []> {
+    return this.rentService.rentReport(date);
   }
 }

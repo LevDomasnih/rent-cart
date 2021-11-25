@@ -6,7 +6,7 @@ import { PG_CONNECTION } from './constans';
 export class DbService {
   constructor(@Inject('PG_CONNECTION') private pool: Pool) {}
 
-  executeQuery(queryText: string, values: any[] = []): Promise<any[]> {
+   executeQuery<T>(queryText: string, values: any[] = []): Promise<T[]> {
     return this.pool.query(queryText, values).then((result: QueryResult) => {
       return result.rows;
     });
