@@ -109,7 +109,7 @@ export class RentService {
       return this.dbService.executeQuery(
         `
             SELECT
-                c.car_name, c.car_number, SUM(rent_lat.counter) AS rent_percent
+                c.car_name, c.car_number, SUM(round(rent_lat.counter * (100 / $2))) AS rent_percent
             FROM
                 car c
                     LEFT JOIN rent r on c.id = r.car_id
@@ -125,13 +125,8 @@ export class RentService {
 
             group BY rent_lat.year_month, c.car_name, c.car_number ORDER BY rent_lat.year_month
         `,
-        [date]
-      ).then(e => e.map(c => {
-        const percentIdDay = 100 / daysInMonth
-        c.rent_percent = Math.round(c.rent_percent * percentIdDay)
-
-        return c
-      }))
+        [date, daysInMonth]
+      )
     } catch (e) {
       throw e
     }
