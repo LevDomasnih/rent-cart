@@ -11,4 +11,9 @@ export class RentController {
   async checkRent(@Body() dto: CheckRentRequestDto) {
     return this.rentService.checkCarRent(dto)
   }
+
+  @Post('rent')
+  async rent(@Body() dto: CheckRentRequestDto) {
+    return this.rentService.rentCar(dto)
+  }
 }

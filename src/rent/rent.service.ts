@@ -42,7 +42,7 @@ export class RentService {
     return rentCars.length === 0
   }
 
-  private async sessionPrice({ start_session, end_session }: Omit<CheckRentRequestDto, 'id'>) {
+  private sessionPrice({ start_session, end_session }: Omit<CheckRentRequestDto, 'id'>) {
     const start = moment(start_session, "YYYY-MM-DD")
     const end = moment(end_session, "YYYY-MM-DD")
 
@@ -81,7 +81,23 @@ export class RentService {
     return this.sessionPrice({ start_session, end_session })
   }
 
-  async rentCar(dto: CheckRentRequestDto) {
+  async rentCar({ start_session, id, end_session }: CheckRentRequestDto) {
+    const isNotRented = await this.isNotRented({ start_session, id, end_session })
 
+    if (!isNotRented) {
+      return false
+    }
+
+    const price = this.sessionPrice({ start_session, end_session })
+
+    try {
+      return this.dbService.executeQuery(
+        `INSERT INTO rent (car_id, start_session, end_session, price) VALUES ($1, $2, $3, $4) 
+                    RETURNING id, car_id, start_session, end_session, price`,
+        [id, start_session, end_session, price]
+      ).then(e => e[0])
+    } catch (e) {
+      throw e
+    }
   }
 }
