@@ -52,20 +52,19 @@ export class RentService {
 
     let price = 0
 
-    for (let i = days, y = 0; i > 0; i--) {
-      if (sortedSales.length > y) {
-        if (i >= sortedSales[y].from) {
-          price += basePrice * ((100 - sortedSales[y].sale) / 100)
-        } else {
-          if (sortedSales.length > y + 1) {
-            y += 1
-            price += basePrice * ((100 - sortedSales[y].sale) / 100)
-          } else {
-            price += basePrice
-          }
+    for (let d = days; d > 0; d--) { // days each
+
+      for (let i = 0; i <= sortedSales.length; i++) { // sales each
+
+        if (i === sortedSales.length) {
+          price += basePrice
+          break;
         }
-      } else {
-        price += basePrice
+
+        if (sortedSales[i].from <= d && d <= sortedSales[i].to) {
+          price += basePrice * ((100 - sortedSales[i].sale) / 100)
+          break
+        }
       }
     }
 
