@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { RentService } from './rent.service';
 import { CheckRentRequestDto } from './dto/check-rent-request-dto';
 
@@ -15,5 +15,10 @@ export class RentController {
   @Post('rent')
   async rent(@Body() dto: CheckRentRequestDto) {
     return this.rentService.rentCar(dto)
+  }
+
+  @Get(':date')
+  async getReport(@Param('date') date: string) {
+    return this.rentService.rentReport(date)
   }
 }

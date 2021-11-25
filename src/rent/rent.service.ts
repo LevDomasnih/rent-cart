@@ -100,4 +100,40 @@ export class RentService {
       throw e
     }
   }
+
+  async rentReport(date: string) {
+
+    const daysInMonth = moment(date, "YYYY-MM").daysInMonth()
+
+    try {
+      return this.dbService.executeQuery(
+        `
+            SELECT
+                c.car_name, c.car_number, SUM(rent_lat.counter) AS rent_percent
+            FROM
+                car c
+                    LEFT JOIN rent r on c.id = r.car_id
+                    left JOIN LATERAL
+                    (SELECT
+                         to_char(gs,'YYYY-MM') as year_month,
+                         count(gs) as counter
+                     FROM generate_series(r.start_session, r.end_session, interval '1 day') gs
+                     GROUP BY year_month
+                    ) rent_lat ON TRUE
+
+            WHERE rent_lat.year_month = $1
+
+            group BY rent_lat.year_month, c.car_name, c.car_number ORDER BY rent_lat.year_month
+        `,
+        [date]
+      ).then(e => e.map(c => {
+        const percentIdDay = 100 / daysInMonth
+        c.rent_percent = Math.round(c.rent_percent * percentIdDay)
+
+        return c
+      }))
+    } catch (e) {
+      throw e
+    }
+  }
 }
