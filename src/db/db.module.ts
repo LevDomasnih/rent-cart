@@ -13,7 +13,7 @@ const dbProvider = {
       user: configService.get('POSTGRES_USER'),
       password: configService.get('POSTGRES_PASSWORD'),
       database: configService.get('POSTGRES_DB'),
-      port: configService.get('POSTGRES_PORT'),
+      port: configService.get('POSTGRES_LOCAL_PORT'),
       host: configService.get('POSTGRES_HOST'),
     });
   }

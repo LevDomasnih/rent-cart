@@ -1,17 +1,19 @@
-version: '3.1'
-
+version: '3'
 services:
-  pg_db:
+  rent:
+    build: .
+    ports:
+      - 3000:3000
+    volumes:
+      - ./.env:/opt/app/.env
+    depends_on:
+      - postgres
+
+  postgres:
     image: postgres
     restart: always
-    environment:
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_HOST=127.0.0.1
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-      - ./postgresql:/var/lib/postgresql/data
     ports:
-      - ${POSTGRES_PORT:-5432}:5432
+      - 5432:5432
+    env_file: .env

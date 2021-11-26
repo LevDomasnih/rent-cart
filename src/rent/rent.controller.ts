@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Post } from "@nestjs/common";
 import { RentService } from "./rent.service";
 import { RentRequestDto } from "./dto/rent-request.dto";
 import { DateValidationPipe } from "../pipes/date-validation.pipe";
-import { ApiCreatedResponse, ApiTags } from "@nestjs/swagger";
+import { ApiCreatedResponse, ApiParam, ApiTags } from '@nestjs/swagger';
 import { ReportResponseDto } from "./dto/report-response.dto";
 import { CheckRentResponseDto } from "./dto/check-rent-response.dto";
 import { RentResponseDto } from "./dto/rent-response.dto";
@@ -36,6 +36,10 @@ export class RentController {
   @ApiCreatedResponse({
     description: "Отчет о средней загрузке машин в месяц",
     type: [ReportResponseDto]
+  })
+  @ApiParam({
+    name: 'date',
+    format: 'YYYY-MM'
   })
   async getReport(@Param("date", DateValidationPipe) date: string): Promise<ReportResponseDto> {
     return this.rentService.rentReport(date);
