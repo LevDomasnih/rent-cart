@@ -1,8 +1,8 @@
-import { RentModel } from "../../models/rent.model";
-import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean, IsDateString, IsNotEmpty, IsNumber, IsString, ValidateIf } from "class-validator";
+import { RentModel } from '../../models/rent.model';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsBoolean, IsDateString, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
-export class RentResponseDto implements Omit<RentModel, "id"> {
+export class RentResponseDto implements Omit<RentModel, 'id'> {
 
   constructor(isRented: boolean, car_id: number, start_session: string, end_session: string, price: number | null) {
     this.isRented = isRented;
@@ -37,7 +37,6 @@ export class RentResponseDto implements Omit<RentModel, "id"> {
   @ApiProperty()
   @IsNumber()
   @IsNotEmpty()
-  @ValidateIf((object, value) => value !== null)
-  price: number | null;
+  price: number;
 
 }

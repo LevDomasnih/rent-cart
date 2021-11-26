@@ -37,7 +37,7 @@ export class RentController {
     description: "Отчет о средней загрузке машин в месяц",
     type: [ReportResponseDto]
   })
-  async getReport(@Param("date", DateValidationPipe) date: string): Promise<ReportResponseDto[] | []> {
+  async getReport(@Param("date", DateValidationPipe) date: string): Promise<ReportResponseDto> {
     return this.rentService.rentReport(date);
   }
 }

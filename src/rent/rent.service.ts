@@ -7,6 +7,7 @@ import { TariffsModel } from "../models/tariffs.model";
 import { ReportResponseDto } from "./dto/report-response.dto";
 import { CheckRentResponseDto } from "./dto/check-rent-response.dto";
 import { RentResponseDto } from "./dto/rent-response.dto";
+import { ReportModel } from '../models/report.model';
 
 @Injectable()
 export class RentService {
@@ -33,7 +34,7 @@ export class RentService {
     const start = moment(start_session, "YYYY-MM-DD");
     const end = moment(end_session, "YYYY-MM-DD");
 
-    const days = moment.duration(end.diff(start)).asDays();
+    const days = moment.duration(end.diff(start)).asDays() + 1;
 
     const basePrice = await this.dbService
       .executeQuery<{ price: number }>(
@@ -69,11 +70,11 @@ export class RentService {
   async checkCarRent({ start_session, id, end_session }: RentRequestDto) {
     const isNotRented = await this.isNotRented({ start_session, id, end_session });
 
-    if (!isNotRented) {
-      return new CheckRentResponseDto(null, true);
-    }
-
     const price = await this.sessionPrice({ start_session, end_session });
+
+    if (!isNotRented) {
+      return new CheckRentResponseDto(price, true);
+    }
 
     return new CheckRentResponseDto(price, false);
   }
@@ -81,11 +82,12 @@ export class RentService {
   async rentCar({ start_session, id, end_session }: RentRequestDto) {
     const isNotRented = await this.isNotRented({ start_session, id, end_session });
 
+    const price = await this.sessionPrice({ start_session, end_session });
+
     if (!isNotRented) {
-      return new RentResponseDto(true, id, start_session, end_session, null);
+      return new RentResponseDto(true, id, start_session, end_session, price);
     }
 
-    const price = await this.sessionPrice({ start_session, end_session });
 
     try {
       await this.dbService.executeQuery<RentModel>(
@@ -105,11 +107,11 @@ export class RentService {
     const daysInMonth = moment(date, "YYYY-MM").daysInMonth();
 
     try {
-      return this.dbService.executeQuery<ReportResponseDto>(
+      const carsReport = await this.dbService.executeQuery<ReportModel>(
         `
             SELECT c.car_name,
                    c.car_number,
-                   SUM(round(rent_lat.counter * (100 / $2))) AS rent_percent
+                   SUM(rent_lat.counter)::INTEGER AS car_percent
             FROM cars c
                      LEFT JOIN rent r on c.id = r.car_id
                      left JOIN LATERAL
@@ -124,8 +126,25 @@ export class RentService {
             group BY rent_lat.year_month, c.car_name, c.car_number
             ORDER BY rent_lat.year_month
         `,
-        [date, daysInMonth]
-      );
+        [date]
+      )
+
+      const reportLength = carsReport.length
+
+      if (reportLength === 0) {
+        return new ReportResponseDto(carsReport, 0)
+      }
+
+      let carsRentSum = 0
+
+      carsReport.forEach(car => {
+        carsRentSum += car.car_percent
+        car.car_percent = Math.round(car.car_percent * (100 / daysInMonth))
+      });
+
+      const carsPercent = Math.round((carsRentSum / reportLength) * (100 / daysInMonth))
+
+      return new ReportResponseDto(carsReport, carsPercent)
     } catch (e) {
       throw e;
     }

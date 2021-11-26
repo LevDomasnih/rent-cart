@@ -1,20 +1,24 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsString, ValidateNested } from 'class-validator';
+import { ReportModel } from '../../models/report.model';
+import { Type } from 'class-transformer';
 
 export class ReportResponseDto {
 
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  car_number: string
+  constructor(cars_report: ReportModel[] | [], avg_cars_percent: number) {
+    this.cars_report = cars_report;
+    this.avg_cars_percent = avg_cars_percent;
+  }
 
-  @ApiProperty()
+  @ApiProperty({ type: () => [ReportModel]})
   @IsString()
   @IsNotEmpty()
-  car_name: string
+  @ValidateNested()
+  @Type(() => ReportModel)
+  cars_report: ReportModel[] | []
 
   @ApiProperty()
   @IsNumber()
   @IsNotEmpty()
-  rent_percent: number
+  avg_cars_percent: number
 }
